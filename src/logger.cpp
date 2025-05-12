@@ -1,6 +1,14 @@
+#ifndef _H_LOGGING
+#define _H_LOGGING
+
 #include "../inc/logger.h"
 
+static bool _g_logging_kill_signal = false;
+
 logger::logger() {
+
+	_status = false;
+	
 	_condMessage  = PTHREAD_COND_INITIALIZER; 
 	_mutexMessage = PTHREAD_MUTEX_INITIALIZER; 
 	_mutexQueue   = PTHREAD_MUTEX_INITIALIZER;
@@ -9,12 +17,26 @@ logger::logger() {
 	if ( _fd == -1 ) {
 		_fd = creat( "test.log", 0644); 
 	}
-	
+	pthread_attr_t	_attribute;
+
+	int errorCode = pthread_attr_init(&_attribute);
+	if ( errorCode != 0 ) {
+		fprintf( stderr, "failed to initiate logging thread\n" );
+		return;
+	}
+	errorCode = pthread_create( &_id, &_attribute, _writter, NULL);
+	if ( errorCode != 0 ) {
+		fprintf( stderr, "failed to start logging thread\n" );
+		return;	
+	}
+
+	_status = true;
+
 }
 
 void * logger::_writter( void * e ) {
 
-	while (true) {
+	while (! _g_logging_kill_signal) {
 		pthread_mutex_lock(&_mutexMessage);
 		pthread_cond_wait(&_condMessage, &_mutexMessage);
 		
@@ -28,13 +50,24 @@ void * logger::_writter( void * e ) {
 		pthread_mutex_unlock(&_mutexMessage);
 	}
 
+	return NULL;
+}
+
+void logger::clean() {
+	void * _dummy;
+	_g_logging_kill_signal = true;
+	pthread_join(_id, &_dummy);
 	close(_fd);
+	pthread_mutex_destroy(&_mutexQueue);
+	pthread_mutex_destroy(&_mutexMessage);
+	pthread_cond_destroy(&_condMessage);
 }
 
 void logger::_pushLogMsg( logMessage l ) {
 	pthread_mutex_lock(&_mutexQueue);
 	_msgQueue.push(l);
 	pthread_mutex_unlock(&_mutexQueue);
+	pthread_cond_signal(&_condMessage);
 }
 
 void logger::info( std::string s ) {
@@ -49,3 +82,5 @@ void logger::error( std::string s ) {
 void logger::debug( std::string s ) {
 	_pushLogMsg(logMessage( _e_debug, s));
 }
+
+#endif

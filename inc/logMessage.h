@@ -1,7 +1,7 @@
+#ifndef _H_LOG_MESSAGE
+#define _H_LOG_MESSAGE
 
 #include <string>
-
-
 
 typedef enum {
 	_e_debug = 4,
@@ -27,3 +27,5 @@ class logMessage {
 
 		std::string toString(); 
 };
+
+#endif
