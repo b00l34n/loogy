@@ -3,20 +3,22 @@
 
 #include "../inc/logger.h"
 
-static bool _g_logging_kill_signal = false;
+static bool 				_g_logging_kill_signal = false;
+static std::queue<logMessage>		_msgQueue     = std::queue<logMessage>(); 	
+static pthread_cond_t			_condMessage  = PTHREAD_COND_INITIALIZER;
+static pthread_mutex_t			_mutexMessage = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t 			_mutexQueue   = PTHREAD_MUTEX_INITIALIZER;
+static int				_fd;
 
 logger::logger() {
 
 	_status = false;
-	
-	_condMessage  = PTHREAD_COND_INITIALIZER; 
-	_mutexMessage = PTHREAD_MUTEX_INITIALIZER; 
-	_mutexQueue   = PTHREAD_MUTEX_INITIALIZER;
 
 	_fd = open( "test.log", O_RDWR); 
 	if ( _fd == -1 ) {
 		_fd = creat( "test.log", 0644); 
 	}
+
 	pthread_attr_t	_attribute;
 
 	int errorCode = pthread_attr_init(&_attribute);
@@ -37,9 +39,10 @@ logger::logger() {
 void * logger::_writter( void * e ) {
 
 	while (! _g_logging_kill_signal) {
-		pthread_mutex_lock(&_mutexMessage);
-		pthread_cond_wait(&_condMessage, &_mutexMessage);
-		
+		if (_msgQueue.empty()) {	
+			pthread_mutex_lock(&_mutexMessage);
+			pthread_cond_wait(&_condMessage, &_mutexMessage);
+		}	
 		while ( ! _msgQueue.empty() ) {
 			std::string s 	= _msgQueue.front().toString();	
 			size_t len 	= s.size();	
@@ -49,7 +52,6 @@ void * logger::_writter( void * e ) {
 
 		pthread_mutex_unlock(&_mutexMessage);
 	}
-
 	return NULL;
 }
 

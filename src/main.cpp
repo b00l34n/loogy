@@ -1,16 +1,19 @@
+
+#include <stdio.h>
 #include "../inc/logger.h"
 
 int main ( int argc, char * argv[] ) {
 	
 	logger l = logger();
 
-	if ( logger::status() ) {
+	if ( l.status() ) {
 		logger::info("Test");
 		logger::warn("Test");
 		logger::error("Test");
-		logger::clean();
-	}
-
+	} else {
+		fprintf(stderr, "Fucked up");
+	}	
+	l.clean();
+	
 	return 0;
-
 }
