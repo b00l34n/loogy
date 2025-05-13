@@ -15,6 +15,10 @@ all: $(SRC)
 test:
 	@$(TRGT)
 
+debug: $(SRC)
+	@mkdir -p build
+	$(CC) $(FLAGS) -DDEBUG $(LIBS) -I./inc/ -o $(TRGT) $^
+
 db:
 	gdb $(TRGT)
 

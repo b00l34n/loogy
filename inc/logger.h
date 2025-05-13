@@ -19,7 +19,8 @@ class logger {
 		static void 			_pushLogMsg( logMessage );
 
 	public:
-		logger();
+		logger(std::string);
+		logger() : logger("./logfile"){};
 
 		static void 			info( std::string );	
 		static void 			warn( std::string );	
