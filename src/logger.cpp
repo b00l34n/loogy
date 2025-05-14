@@ -1,6 +1,3 @@
-#ifndef _H_LOGGING
-#define _H_LOGGING
-
 #include <stdio.h>
 #include "../inc/logger.h"
 
@@ -89,4 +86,3 @@ void logger::debug( std::string s ) {
 #endif
 }
 
-#endif

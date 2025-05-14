@@ -1,3 +1,6 @@
+#ifndef _H_LOGGING
+#define _H_LOGGING
+
 #include <queue>
 #include <string>
 #include "./logMessage.h"
@@ -30,3 +33,5 @@ class logger {
 		bool				status() { return _status; };	
 		void				clean();
 };
+
+#endif
