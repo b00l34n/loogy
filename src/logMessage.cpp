@@ -26,7 +26,7 @@ std::string logMessage::toString() {
 			result += "DEBUG >> ";
 			break;
 		case (_e_no):
-			result += "NOTYP >> ";
+			result += "LOG   >> ";
 			break;
 	}
 	result += _message + "\n";

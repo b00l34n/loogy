@@ -18,6 +18,7 @@ class logger {
 		bool				_status;
 		pthread_t		 	_id;
 
+		static void 			_writeFromQueue( std::queue<logMessage> * q );
 		static void *			_writter( void * );
 		static void 			_pushLogMsg( logMessage );
 
@@ -32,6 +33,8 @@ class logger {
 
 		bool				status() { return _status; };	
 		void				clean();
+
+		~logger();
 };
 
 #endif

@@ -1,12 +1,14 @@
 #include <stdio.h>
 #include "../inc/logger.h"
 
+
 static bool 				_g_logging_kill_signal;
 static std::queue<logMessage>		_msgQueue     = std::queue<logMessage>(); 	
 static pthread_cond_t			_condMessage  = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t			_mutexMessage = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t 			_mutexQueue   = PTHREAD_MUTEX_INITIALIZER;
 static int				_fd;
+
 
 logger::logger(std::string s) {
 
@@ -25,6 +27,7 @@ logger::logger(std::string s) {
 		fprintf( stderr, "failed to initiate logging thread\n" );
 		return;
 	}
+
 	errorCode = pthread_create( &_id, &_attribute, _writter, NULL);
 	if ( errorCode != 0 ) {
 		fprintf( stderr, "failed to start logging thread\n" );
@@ -35,34 +38,31 @@ logger::logger(std::string s) {
 
 }
 
+
+void logger::_writeFromQueue( std::queue<logMessage> * q ) {
+	while ( ! q->empty() && _fd != 0 ) {
+		std::string s 	= q->front().toString();	
+		size_t len 	= s.size();	
+		write(_fd, s.c_str(), len);
+		q->pop();
+	}
+}
+
+
 void * logger::_writter( void * e ) {
 	while (! _g_logging_kill_signal) {
 		if (_msgQueue.empty()) {	
 			pthread_mutex_lock(&_mutexMessage);
 			pthread_cond_wait(&_condMessage, &_mutexMessage);
 		}	
-		while ( ! _msgQueue.empty() ) {
-			std::string s 	= _msgQueue.front().toString();	
-			size_t len 	= s.size();	
-			write(_fd, s.c_str(), len);
-			_msgQueue.pop();
-		}
+
+		_writeFromQueue(&_msgQueue);
 
 		pthread_mutex_unlock(&_mutexMessage);
 	}
 	return NULL;
 }
 
-void logger::clean() {
-	void * _dummy;
-	_g_logging_kill_signal = true;
-	pthread_cond_signal(&_condMessage);
-	pthread_join(_id, &_dummy);
-	close(_fd);
-	pthread_mutex_destroy(&_mutexQueue);
-	pthread_mutex_destroy(&_mutexMessage);
-	pthread_cond_destroy(&_condMessage);
-}
 
 void logger::_pushLogMsg( logMessage l ) {
 	pthread_mutex_lock(&_mutexQueue);
@@ -70,6 +70,30 @@ void logger::_pushLogMsg( logMessage l ) {
 	pthread_mutex_unlock(&_mutexQueue);
 	pthread_cond_signal(&_condMessage);
 }
+
+
+void logger::clean() {
+	void * _dummy;
+	_g_logging_kill_signal = true;
+	
+	pthread_cond_signal(&_condMessage);
+	pthread_join(_id, &_dummy);
+
+	_writeFromQueue(&_msgQueue);
+	
+	close(_fd);
+	pthread_mutex_destroy(&_mutexQueue);
+	pthread_mutex_destroy(&_mutexMessage);
+	pthread_cond_destroy(&_condMessage);
+}
+
+
+logger::~logger() {
+	clean();
+	_id = 0;
+	_fd = 0;
+}
+
 
 void logger::info( std::string s ) {
 	_pushLogMsg(logMessage( _e_info, s));
