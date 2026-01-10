@@ -2,6 +2,9 @@
 #define _H_LOG_MESSAGE
 
 #include <string>
+#include <chrono>
+#include <ctime>
+
 
 typedef enum {
 	_e_debug = 4,
@@ -16,6 +19,7 @@ class logMessage {
 	private:
 		logType		_type;
 		std::string	_message;		
+		std::time_t 	_time;
 
 	public:
 		logMessage(){ /* Nothing */ };

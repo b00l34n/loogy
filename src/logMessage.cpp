@@ -3,15 +3,22 @@
 logMessage::logMessage(std::string s) {
 	_type 		= _e_no;
 	_message 	= s;
+	_time		= std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()); 
 }
 
 logMessage::logMessage(logType t, std::string s) {
 	_type 		= t;
 	_message 	= s;
+	_time		= std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()); 
 }
 
 std::string logMessage::toString() { 
-	std::string result;	
+	std::string result;
+	
+	std::string time = std::ctime(&_time);
+	time.pop_back();
+	std::string log_time = "[" + time + "] ";
+
 	switch ( _type ) {
 		case (_e_info):
 			result += "INFO  >> ";
@@ -29,7 +36,7 @@ std::string logMessage::toString() {
 			result += "NOTYP >> ";
 			break;
 	}
-	result += _message + "\n";
+	result += log_time + _message + "\n";
 	return result;
 }
 
