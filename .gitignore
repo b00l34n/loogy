@@ -1,3 +1,4 @@
 build/
 *.db
 *.log
+libloogy.a
