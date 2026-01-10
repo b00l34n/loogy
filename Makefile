@@ -1,26 +1,27 @@
 .PHONY:
 
-CC     = g++
-SRC   := $(wildcard src/*.cpp) 
-TRGT  := build/main
-LIBS  := 
-FLAGS := -g 
+CXX	= g++
+FLAGS	= -c
 
-default: all
+SRC	= $(wildcard src/*.cpp) 
+OBJ	= $(SRC:.cpp=.o)
+BOBJ	= $(wildcard build/*.o)
+INC	= -I./inc/
 
-all: $(SRC)
-	@mkdir -p build
-	$(CC) $(FLAGS) $(LIBS) -I./inc/ -o $(TRGT) $^
+TRGT  	= libloogy.a 
+LIBS 	= 
 
-test:
-	@$(TRGT)
+default: $(TRGT)
 
-debug: $(SRC)
-	@mkdir -p build
-	$(CC) $(FLAGS) -DDEBUG $(LIBS) -I./inc/ -o $(TRGT) $^
+%.o: %.cpp
+	$(CXX) $(FLAGS) $(INC) $< -o build/$(notdir $@) 
+	
 
-db:
-	gdb $(TRGT)
+$(TRGT) : mkdir $(OBJ) 
+	ar rcs $@ $(BOBJ) 
+
+mkdir:
+	@mkdir -p build/
 
 clean:
 	@rm -r build/
