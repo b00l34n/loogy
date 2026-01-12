@@ -9,6 +9,9 @@ extern "C" {
 	#include <fcntl.h>
 }
 
+#ifndef LOOGY_H_
+#define LOOGY_H_
+
 class logger {
 
 	private:
@@ -30,3 +33,5 @@ class logger {
 		bool				status() { return _status; };	
 		void				clean();
 };
+
+#endif
