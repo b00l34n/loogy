@@ -32,6 +32,8 @@ class logger {
 
 		bool				status() { return _status; };	
 		void				clean();
+
+		~logger();
 };
 
 #endif

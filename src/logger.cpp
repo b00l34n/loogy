@@ -4,12 +4,14 @@
 #include <stdio.h>
 #include "../inc/logger.h"
 
+
 static bool 				_g_logging_kill_signal;
 static std::queue<logMessage>		_msgQueue     = std::queue<logMessage>(); 	
 static pthread_cond_t			_condMessage  = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t			_mutexMessage = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t 			_mutexQueue   = PTHREAD_MUTEX_INITIALIZER;
 static int				_fd;
+
 
 logger::logger(std::string s) {
 
@@ -38,6 +40,7 @@ logger::logger(std::string s) {
 
 }
 
+
 void * logger::_writter( void * e ) {
 	while (! _g_logging_kill_signal) {
 		if (_msgQueue.empty()) {	
@@ -56,6 +59,7 @@ void * logger::_writter( void * e ) {
 	return NULL;
 }
 
+
 void logger::clean() {
 	void * _dummy;
 	_g_logging_kill_signal = true;
@@ -67,6 +71,7 @@ void logger::clean() {
 	pthread_cond_destroy(&_condMessage);
 }
 
+
 void logger::_pushLogMsg( logMessage l ) {
 	pthread_mutex_lock(&_mutexQueue);
 	_msgQueue.push(l);
@@ -74,19 +79,31 @@ void logger::_pushLogMsg( logMessage l ) {
 	pthread_cond_signal(&_condMessage);
 }
 
+
 void logger::info( std::string s ) {
 	_pushLogMsg(logMessage( _e_info, s));
 }
+
+
 void logger::warn( std::string s ) { 
 	_pushLogMsg(logMessage( _e_warn, s));
 }	
+
+
 void logger::error( std::string s ) {
 	_pushLogMsg(logMessage( _e_error, s));
 }	
+
+
 void logger::debug( std::string s ) {
 #ifdef DEBUG
 	_pushLogMsg(logMessage( _e_debug, s));
 #endif
+}
+
+
+logger::~logger() {
+	clean();
 }
 
 #endif
