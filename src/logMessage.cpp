@@ -26,16 +26,16 @@ std::string logMessage::toString() {
 
 	switch ( _type ) {
 		case (_e_info):
-			result += "INFO  >> ";
+			result += INFO_TAG;
 			break;
 		case (_e_warn): 
-			result += "WARN  >> ";
+			result += WARN_TAG;
 			break;
 		case (_e_error): 
-			result += "ERROR >> ";
+			result += ERROR_TAG;
 			break;
 		case (_e_debug):
-			result += "DEBUG >> ";
+			result += DEBUG_TAG;
 			break;
 		case (_e_no):
 			result += "NOTYP >> ";
