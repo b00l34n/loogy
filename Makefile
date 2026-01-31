@@ -1,29 +1,95 @@
-.PHONY:
+.PHONY: clean test
+.PRECIOUS: $(PATHB)test_%.out
+.PRECIOUS: $(PATHD)%.d
+.PRECIOUS: $(PATHO)%.o
+.PRECIOUS: $(PATHR)%.txt
 
+CC	= gcc
 CXX	= g++
+
 FLAGS	= -c
 
-SRC	= $(wildcard src/*.cpp) 
-OBJ	= $(SRC:.cpp=.o)
-BOBJ	= $(wildcard build/*.o)
-INC	= -I./inc/
+PATHU	= Unity/src/
+PATHS	= src/
+PATHI	= inc/
+PATHT	= test/
+PATHB	= build/
+PATHD	= build/depends/
+PATHO	= build/objs/
+PATHR	= build/results/
 
-TRGT  	= libloogy.a 
+SRCS	= $(wildcard $(PATHS)*.cpp) 
+SRCT	= $(wildcard $(PATHT)*.cpp) 
+
+OBJ	= $(patsubst $(PATHS)%.cpp,$(PATHO)%.o,$(SRCS))
+INC	= -I. -I$(PATHU) -I$(PATHI)
+
+TRGT  	= $(PATHB)libloogy.a 
 LIBS 	= 
+
+BUILD_PATHS = $(PATHB) $(PATHD) $(PATHO) $(PATHR)
+RESULTS	= $(patsubst $(PATHT)%.cpp,$(PATHR)%.txt,$(SRCT))
+
 
 default: $(TRGT)
 
-%.o: %.cpp
-	$(CXX) $(FLAGS) $(INC) $< -o build/$(notdir $@) 
-	
 
-$(TRGT) : mkdir $(OBJ) 
-	ar rcs $@ $(BOBJ) 
+$(PATHB):
+	mkdir -p $(PATHB)
 
-mkdir:
-	@mkdir -p build/
+
+$(PATHD):
+	mkdir -p $(PATHD)
+
+
+$(PATHO):
+	mkdir -p $(PATHO)
+
+
+$(PATHR):
+	mkdir -p $(PATHR)
+
+
+$(PATHR)%.txt: $(PATHB)%.out
+	./$< > $@ 2>&1
+
+
+#$(PATHB)test_%.out: $(PATHO)test_%.o $(PATHO)%.o $(PATHO)unity.o $(PATHD)test_%.d
+$(PATHB)test_%.out: $(PATHO)test_%.o $(PATHO)%.o $(PATHO)unity.o $(OBJ)
+	$(CXX) $(INC) -DTEST -o $@ $^
+
+
+$(PATHO)%.o:: $(PATHT)%.cpp
+	$(CXX) $(FLAGS) $(INC) -DTEST $< -o $@
+
+
+$(PATHO)%.o:: $(PATHS)%.cpp
+	$(CXX) $(FLAGS) $(INC) -DTEST $< -o $@
+
+
+$(PATHO)%.o:: $(PATHU)%.c $(PATHU)%.h
+	$(CC) $(FLAGS) $(INC) -DTEST $< -o $@
+
+
+$(PATHD)%.d:: $(PATHT)%.c
+	$(CC) -MM -MG -MF $@ $<
+
+
+$(PATHD)%.d:: $(PATHT)%.cpp
+	$(CXX) -MM -MG -MF $@ $<
+
+
+
+$(TRGT) : $(BUILD_PATHS) $(OBJ) 
+	ar rcs $@ $(OBJ) 
 
 clean:
-	@rm -r build/
+	@rm -r $(PATHB)
 
 
+test: $(BUILD_PATHS) $(RESULTS)
+	@echo "-----------------------IGNORES:-----------------------"
+	@echo `grep -s IGNORE $(PATHR)*.txt`
+	@echo "-----------------------FAILURES:-----------------------"
+	@echo `grep -s FAIL $(PATHR)*.txt`
+	@echo "DONE"
