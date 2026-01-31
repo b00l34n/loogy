@@ -18,7 +18,7 @@ logger::logger(std::string s) {
 	_status = false;
 	_g_logging_kill_signal = false;
 
-	_fd = open( s.c_str(), O_RDWR ); 
+	_fd = open( s.c_str(), O_RDWR | O_DIRECT ); 
 	if ( _fd == -1 ) {
 		_fd = creat( s.c_str(), 0644); 
 	}
