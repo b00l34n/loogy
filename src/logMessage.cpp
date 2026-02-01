@@ -15,10 +15,9 @@ logMessage::logMessage(logType t, std::string s) {
 std::string logMessage::toString() { 
 	std::string result;
 	
-	char time[std::size("yyyy-mm-dd hh:mm:ss")];
+	char time[TIME_DATE_STRING_LEN];
 
-	std::strftime(std::data(time), std::size(time),
-                  "%F %T", std::localtime(&_time));
+	std::strftime(std::data(time), std::size(time), "%F %T", std::localtime(&_time));
 
 	std::string log_time = "[ " ;
 	log_time += time;

@@ -10,11 +10,12 @@
 #define ERROR_TAG		"ERROR >> "
 #define DEBUG_TAG		"DEBUG >> "
 
-#define TIME_DATE_TAG_SIZE	std::size("[ yyyy-mm-dd hh:mm:ss ] ")
+#define TIME_DATE_STRING_LEN	std::size("yyyy-mm-dd hh:mm:ss")
+#define TIME_DATE_TAG_SIZE	TIME_DATE_STRING_LEN + 5
 
 /* + 1 because of line feed */
-#define INFO_MSG_BASE_SIZE	std::size(INFO_TAG) + TIME_DATE_TAG_SIZE 
-#define WARN_MSG_BASE_SIZE 	std::size(WARN_TAG) + TIME_DATE_TAG_SIZE 
+#define INFO_MSG_BASE_SIZE	std::size(INFO_TAG)  + TIME_DATE_TAG_SIZE 
+#define WARN_MSG_BASE_SIZE 	std::size(WARN_TAG)  + TIME_DATE_TAG_SIZE 
 #define ERROR_MSG_BASE_SIZE 	std::size(ERROR_TAG) + TIME_DATE_TAG_SIZE 
 #define DEBUG_MSG_BASE_SIZE 	std::size(DEBUG_TAG) + TIME_DATE_TAG_SIZE
 
