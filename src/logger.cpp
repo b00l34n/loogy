@@ -53,7 +53,6 @@ void * logger::_writter( void * e ) {
 			write(_fd, s.c_str(), len);
 			_msgQueue.pop();
 		}
-
 		pthread_mutex_unlock(&_mutexMessage);
 	}
 	return NULL;
@@ -62,10 +61,18 @@ void * logger::_writter( void * e ) {
 
 void logger::clean() {
 	void * _dummy;
+	while ( ! _msgQueue.empty() ) { /* Busy wait */ } 	
 	_g_logging_kill_signal = true;
 	pthread_cond_signal(&_condMessage);
 	pthread_join(_id, &_dummy);
-	close(_fd);
+	if ( fsync(_fd) == -1 )
+	{
+		perror("fsync");
+	}
+	if ( close(_fd) != 0 )
+	{
+		perror("close");
+	}
 	pthread_mutex_destroy(&_mutexQueue);
 	pthread_mutex_destroy(&_mutexMessage);
 	pthread_cond_destroy(&_condMessage);
